@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  release: one
+  risk_score: 1
+  risk_level: MyString
+  summary: MyText
+  risks: 
+  recommendations: 
+  testing_recommendations: 
+
+two:
+  release: two
+  risk_score: 1
+  risk_level: MyString
+  summary: MyText
+  risks: 
+  recommendations: 
+  testing_recommendations: 

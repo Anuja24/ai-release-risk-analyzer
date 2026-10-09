@@ -1,0 +1,31 @@
+
+# Environment secrets
+.env
+.env.*
+!.env.example
+
+# Rails generated files
+/backend/log/
+/backend/tmp/
+/backend/storage/*
+!/backend/storage/.keep
+/backend/vendor/bundle/
+/backend/config/master.key
+/backend/config/credentials/*.key
+
+# React / Node.js
+/frontend/node_modules/
+/frontend/dist/
+/frontend/build/
+/frontend/.vite/
+
+# OS files
+.DS_Store
+.idea/
+.vscode/
+
+# Coverage reports
+/coverage/
+
+# Bundler local configuration
+.bundle/
