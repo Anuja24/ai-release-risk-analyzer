@@ -1,122 +1,94 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import apiClient from "./api/client";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [releases, setReleases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
+
+  useEffect(() => {
+    const fetchReleases = async () => {
+      try {
+        const response = await apiClient.get("/releases");
+        setReleases(response.data);
+      } catch (error) {
+        setError("Unable to load releases. Please check the Rails API.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReleases();
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <header className="header">
+        <h1>ReleaseGuard AI</h1>
+        <p>AI-Powered Release Risk Analyzer</p>
+      </header>
 
-      <div className="ticks"></div>
+      <main className="dashboard">
+        <div className="dashboard-heading">
+          <div>
+            <h2>Release Dashboard</h2>
+            <p>Monitor releases and identify potential risks.</p>
+          </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          <button className="primary-button" onClick={() => setShowForm(true)}>
+            + New Release
+          </button>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        
+        <section className="summary-cards">
+          <div className="card">
+            <p>Total Releases</p>
+            <h3>3</h3>
+          </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          <div className="card">
+            <p>Pending Analysis</p>
+            <h3>3</h3>
+          </div>
+
+          <div className="card">
+            <p>High Risk Releases</p>
+            <h3>0</h3>
+          </div>
+        </section>
+
+        <section className="releases-section">
+          <h2>Recent Releases</h2>
+
+          {loading && <p>Loading releases...</p>}
+
+          {error && <p role="alert">{error}</p>}
+
+          {!loading && !error && releases.length === 0 && (
+            <p>No releases found. Create your first release!</p>
+          )}
+
+          {!loading &&
+            !error &&
+            releases.map((release) => (
+              <div className="release-row" key={release.id}>
+                <div>
+                  <h3>Release {release.version}</h3>
+                  <p>{release.description || "No description provided"}</p>
+                  <small>Environment: {release.environment}</small>
+                </div>
+
+                <span className={`status ${release.status}`}>
+                  {release.status}
+                </span>
+              </div>
+            ))}
+        </section>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
