@@ -2,6 +2,11 @@
 module Api
   module V1
     class ReleaseChangesController < ApplicationController
+      def index
+        release = Release.find(params[:release_id])
+        render json: release.release_changes
+      end
+      
       def create
         release = Release.find_by(id: params[:release_id])
 
