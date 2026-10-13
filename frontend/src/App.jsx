@@ -4,9 +4,21 @@ import "./App.css";
 
 function App() {
   const [releases, setReleases] = useState([]);
+  const totalReleases = releases.length;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const pendingReleases = releases.filter(
+  (release) => release.status === "pending"
+).length;
+
+  const [formData, setFormData] = useState({
+    version: "",
+    environment: "staging",
+    description: "",
+  });
 
   useEffect(() => {
     const fetchReleases = async () => {
@@ -23,6 +35,40 @@ function App() {
     fetchReleases();
   }, []);
 
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setError("");
+    setFormData((previousData) => ({
+      ...previousData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSubmitError("");
+    try {
+      const response = await apiClient.post("/releases", {
+        release: {
+          user_id: 1,
+          version: formData.version,
+          environment: formData.environment,
+          description: formData.description,
+        },
+      });
+
+      setReleases((previousReleases) => [response.data, ...previousReleases]);
+      setSuccessMessage("Release created successfully!");
+      setShowForm(false);
+    } catch (error) {
+      setSubmitError(
+        error.response?.data?.errors?.join(", ") ||
+          error.response?.data?.error ||
+          "Failed to create release. Please try again.",
+      );
+    }
+  };
+
   return (
     <div className="app">
       <header className="header">
@@ -37,20 +83,91 @@ function App() {
             <p>Monitor releases and identify potential risks.</p>
           </div>
 
-          <button className="primary-button" onClick={() => setShowForm(true)}>
+          <button
+            type="button"
+            className="primary-button"
+            onClick={() => setShowForm(true)}
+          >
             + New Release
           </button>
         </div>
-        
+        {successMessage && (
+          <p className="success-message" role="status">
+            {successMessage}
+          </p>
+        )}
+
+        {showForm && (
+          <section className="releases-section new-release-form">
+            <h2>Create New Release</h2>
+            {submitError && (
+              <p className="form-error" role="alert">
+                {submitError}
+              </p>
+            )}
+
+            <form className="release-form" onSubmit={handleSubmit}>
+              <label>
+                Release Version
+                <input
+                  type="text"
+                  name="version"
+                  value={formData.version}
+                  onChange={handleInputChange}
+                  placeholder="e.g. 3.1.0"
+                />
+              </label>
+
+              <label>
+                Environment
+                <select
+                  name="environment"
+                  value={formData.environment}
+                  onChange={handleInputChange}
+                >
+                  <option value="development">Development</option>
+                  <option value="staging">Staging</option>
+                  <option value="production">Production</option>
+                </select>
+              </label>
+
+              <label>
+                Description
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe the changes in this release"
+                  rows={4}
+                />
+              </label>
+
+              <div className="form-actions">
+                <button type="submit" className="primary-button">
+                  Create Release
+                </button>
+
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => setShowForm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
         <section className="summary-cards">
           <div className="card">
             <p>Total Releases</p>
-            <h3>3</h3>
+            <h3>{totalReleases}</h3>
           </div>
 
           <div className="card">
             <p>Pending Analysis</p>
-            <h3>3</h3>
+            <h3>{pendingReleases}</h3>
           </div>
 
           <div className="card">
@@ -63,7 +180,6 @@ function App() {
           <h2>Recent Releases</h2>
 
           {loading && <p>Loading releases...</p>}
-
           {error && <p role="alert">{error}</p>}
 
           {!loading && !error && releases.length === 0 && (
