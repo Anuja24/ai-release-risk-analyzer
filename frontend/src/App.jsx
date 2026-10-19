@@ -208,6 +208,9 @@ function App() {
       );
 
       setRiskAnalysis(response.data.risk_analysis ?? response.data);
+      setSelectedRelease(null);
+      setReleaseChanges([]);
+      setChangeSuccess("");
 
       // Refresh releases from Rails after analysis completes
       const releasesResponse = await apiClient.get("/releases");
