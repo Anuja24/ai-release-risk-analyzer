@@ -113,12 +113,26 @@ function App() {
         ...previousChanges,
         response.data,
       ]);
+      setReleases((previousReleases) =>
+        previousReleases.map((release) =>
+          release.id === selectedRelease.id
+            ? { ...release, status: "pending" }
+            : release,
+        ),
+      );
+
+      setSelectedRelease((previousRelease) =>
+        previousRelease
+          ? { ...previousRelease, status: "pending" }
+          : previousRelease,
+      );
       setChangeData({
         file_name: "",
         change_type: "modified",
         description: "",
       });
-
+      setRiskAnalysis(null);
+      setAnalysisError("");
       setChangeSuccess("Release change saved successfully!");
     } catch (error) {
       alert(

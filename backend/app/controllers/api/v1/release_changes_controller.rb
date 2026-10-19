@@ -18,6 +18,7 @@ module Api
         release_change = release.release_changes.new(change_params)
 
         if release_change.save
+          release.update!(status: "pending")
           render json: release_change, status: :created
         else
           render json: {

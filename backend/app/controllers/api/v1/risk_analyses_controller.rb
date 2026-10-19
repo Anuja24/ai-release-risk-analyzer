@@ -14,14 +14,17 @@ module Api
       end
 
       def create
-       release = Release.find(params[:release_id])
-       analysis = RiskAnalysisService.analyze_and_save(release)
-       release.update!(status: "analyzed")
-       render json: analysis, status: :created
-       rescue StandardError => e
-       Rails.logger.error("Risk analysis failed: #{e.message}")
-       render json: { error: "Unable to generate risk analysis" },
-       status: :unprocessable_entity
+        release = Release.find(params[:release_id])
+        analysis = RiskAnalysisService.analyze_and_save(release)
+        release.update!(status: "analyzed")
+         render json: {
+            risk_analysis: analysis,
+             release: release
+            }, status: :created
+        rescue StandardError => e
+        Rails.logger.error("Risk analysis failed: #{e.message}")
+        render json: { error: "Unable to generate risk analysis" },
+        status: :unprocessable_entity
       end
     end
   end
