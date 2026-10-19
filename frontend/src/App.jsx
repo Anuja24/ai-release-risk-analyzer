@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import apiClient from "./api/client";
+import RiskAnalysisReport from "./components/RiskAnalysisReport";
+import SummaryCards from "./components/SummaryCards";
+import ReleaseList from "./components/ReleaseList";
 import "./App.css";
 
 function App() {
@@ -38,6 +41,13 @@ function App() {
   });
   const [releaseChanges, setReleaseChanges] = useState([]);
   const [savingChange, setSavingChange] = useState(false);
+  const handleManageChanges = (release) => {
+    setSelectedRelease(release);
+    setChangeSource("manual");
+    setChangeSuccess("");
+    setReleaseChanges([]);
+    fetchReleaseChanges(release.id);
+  };
 
   useEffect(() => {
     const fetchReleases = async () => {
@@ -416,150 +426,23 @@ function App() {
             {analysisError}
           </p>
         )}
-
-        {riskAnalysis && (
-          <section className="risk-report" ref={riskReportRef}>
-            <div className="risk-report-header">
-              <div>
-                <h2>Risk Analysis Report</h2>
-                <p>AI-powered release risk assessment</p>
-              </div>
-
-              <span
-                className={`risk-badge risk-${riskAnalysis.risk_level?.toLowerCase()}`}
-              >
-                {riskAnalysis.risk_level}
-              </span>
-            </div>
-
-            <div className="risk-score-card">
-              <span>Risk Score</span>
-              <div className="risk-score">
-                {riskAnalysis.risk_score}
-                <span>/100</span>
-              </div>
-              <p>Overall release risk assessment</p>
-            </div>
-
-            <div className="risk-report-section">
-              <h3>Summary</h3>
-              <p>{riskAnalysis.summary}</p>
-            </div>
-
-            <div className="risk-report-section">
-              <h3>Identified Risks</h3>
-              {riskAnalysis.risks?.length ? (
-                <ul>
-                  {riskAnalysis.risks.map((risk, index) => (
-                    <li key={index}>{risk}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No specific risks identified.</p>
-              )}
-            </div>
-
-            <div className="risk-report-section">
-              <h3>Recommendations</h3>
-              {riskAnalysis.recommendations?.length ? (
-                <ul>
-                  {riskAnalysis.recommendations.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No recommendations available.</p>
-              )}
-            </div>
-
-            <div className="risk-report-section">
-              <h3>Testing Recommendations</h3>
-              {riskAnalysis.testing_recommendations?.length ? (
-                <ul>
-                  {riskAnalysis.testing_recommendations.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No testing recommendations available.</p>
-              )}
-            </div>
-          </section>
-        )}
-
-        <section className="summary-cards">
-          <div className="card">
-            <p>Total Releases</p>
-            <h3>{totalReleases}</h3>
-          </div>
-
-          <div className="card">
-            <p>Pending Analysis</p>
-            <h3>{pendingReleases}</h3>
-          </div>
-
-          <div className="card">
-            <p>High Risk Releases</p>
-            <h3>{highRiskReleases}</h3>
-          </div>
-        </section>
-
-        <section className="releases-section">
-          <h2>Recent Releases</h2>
-
-          {loading && <p>Loading releases...</p>}
-          {error && <p role="alert">{error}</p>}
-
-          {!loading && !error && releases.length === 0 && (
-            <p>No releases found. Create your first release!</p>
-          )}
-
-          {!loading &&
-            !error &&
-            releases.map((release) => (
-              <div className="release-row" key={release.id}>
-                <div>
-                  <h3>Release {release.version}</h3>
-                  <p>{release.description || "No description provided"}</p>
-                  <small>Environment: {release.environment}</small>
-                </div>
-
-                <span className={`status ${release.status}`}>
-                  {release.status}
-                </span>
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() => {
-                    setSelectedRelease(release);
-                    setChangeSource("manual");
-                    fetchReleaseChanges(release.id);
-                  }}
-                >
-                  Manage Changes
-                </button>
-                <button
-                  type="button"
-                  className="secondary-button"
-                  disabled={analyzingReleaseId !== null}
-                  onClick={() => fetchRiskAnalysis(release.id)}
-                >
-                  View Risk Analysis
-                </button>
-
-                <button
-                  type="button"
-                  className="primary-button"
-                  disabled={analyzingReleaseId !== null}
-                  onClick={() => generateRiskAnalysis(release.id)}
-                >
-                  {analyzingReleaseId === release.id
-                    ? "Analyzing..."
-                    : "Generate Risk Analysis"}
-                </button>
-              </div>
-            ))}
-        </section>
+        <div ref={riskReportRef}>
+          <RiskAnalysisReport riskAnalysis={riskAnalysis} />
+        </div>
+        <SummaryCards
+          totalReleases={totalReleases}
+          pendingReleases={pendingReleases}
+          highRiskReleases={highRiskReleases}
+        />
+        <ReleaseList
+          releases={releases}
+          loading={loading}
+          error={error}
+          analyzingReleaseId={analyzingReleaseId}
+          onManageChanges={handleManageChanges}
+          onViewRiskAnalysis={fetchRiskAnalysis}
+          onGenerateRiskAnalysis={generateRiskAnalysis}
+        />
       </main>
     </div>
   );
