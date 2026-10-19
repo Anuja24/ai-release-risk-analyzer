@@ -231,3 +231,304 @@ body {
   margin-bottom: 16px;
   font-size: 14px;
 }
+
+/* Risk Analysis Report */
+.risk-report {
+  margin-top: 24px;
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+  color: #1e293b;
+}
+
+.risk-report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.risk-report-header h2 {
+  margin: 0 0 6px;
+}
+
+.risk-report-header p,
+.risk-score-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.risk-badge {
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.risk-low {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.risk-medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.risk-high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.risk-score-card {
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.risk-score-card > span {
+  font-weight: 600;
+  color: #475569;
+}
+
+.risk-score {
+  margin: 10px 0;
+  font-size: 38px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.risk-score span {
+  font-size: 18px;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.risk-report-section {
+  padding: 18px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.risk-report-section h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+}
+
+.risk-report-section p {
+  line-height: 1.6;
+  color: #475569;
+}
+
+.risk-report-section ul {
+  padding-left: 22px;
+  margin-bottom: 0;
+}
+
+.risk-report-section li {
+  margin-bottom: 10px;
+  line-height: 1.6;
+  color: #475569;
+}
+
+@media (max-width: 600px) {
+  .risk-report {
+    padding: 16px;
+  }
+
+  .risk-report-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Risk report layout improvements */
+.risk-report {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.risk-report-header {
+  text-align: left;
+}
+
+.risk-report-header h2 {
+  font-size: 24px;
+}
+
+.risk-score-card {
+  text-align: left;
+}
+
+.risk-score {
+  font-size: 36px;
+}
+
+.risk-report-section {
+  text-align: left;
+}
+
+.risk-report-section h3 {
+  font-size: 18px;
+}
+
+.risk-report-section p,
+.risk-report-section li {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.risk-report-section ul {
+  padding-left: 24px;
+}
+
+/* Recent Releases layout */
+.releases-section {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.release-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) minmax(90px, 0.6fr) repeat(3, minmax(145px, 1fr));
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.release-row > div:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.release-row h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.release-row p {
+  margin: 0 0 8px;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+.release-row small {
+  color: #64748b;
+}
+
+.release-row .status {
+  justify-self: center;
+  font-weight: 600;
+  text-align: center;
+}
+
+.release-row button {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  white-space: normal;
+  line-height: 1.3;
+}
+
+/* Tablet and smaller screens */
+@media (max-width: 1000px) {
+  .release-row {
+    grid-template-columns: minmax(0, 1fr) minmax(100px, auto);
+    gap: 14px;
+  }
+
+  .release-row > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .release-row .status {
+    justify-self: start;
+  }
+}
+
+/* Mobile screens */
+@media (max-width: 600px) {
+  .release-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .release-row > div:first-child {
+    grid-column: auto;
+  }
+
+  .release-row .status {
+    justify-self: start;
+  }
+
+  .release-row button {
+    width: 100%;
+  }
+}
+
+/* Align release details consistently */
+.release-row > div:first-child {
+  text-align: left;
+}
+
+.release-row h3,
+.release-row p,
+.release-row small {
+  text-align: left;
+}
+
+.release-row .status {
+  justify-self: center;
+}
+
+/* Keep action buttons consistent */
+.release-row button {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+/* Release status badges */
+.release-row .status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.release-row .status.pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.release-row .status.analyzed {
+  background-color: #dcfce7;
+  color: #166534;
+}
+.dashboard-heading {
+  text-align: center;
+}
+
+.dashboard-heading > div {
+  flex: 1;
+  text-align: center;
+}
+
+.dashboard-heading .primary-button {
+  flex-shrink: 0;
+}
+

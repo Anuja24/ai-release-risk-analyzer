@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import apiClient from "./api/client";
 import "./App.css";
 
@@ -16,6 +16,8 @@ function App() {
   const [riskAnalysis, setRiskAnalysis] = useState(null);
   const [analyzingReleaseId, setAnalyzingReleaseId] = useState(null);
   const [analysisError, setAnalysisError] = useState("");
+  const changeSectionRef = useRef(null);
+  const riskReportRef = useRef(null);
   const pendingReleases = releases.filter(
     (release) => release.status === "pending",
   ).length;
@@ -51,6 +53,24 @@ function App() {
 
     fetchReleases();
   }, []);
+
+  useEffect(() => {
+    if (selectedRelease) {
+      changeSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [selectedRelease]);
+
+  useEffect(() => {
+    if (riskAnalysis) {
+      riskReportRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [riskAnalysis]);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -147,47 +167,45 @@ function App() {
   };
 
   const fetchRiskAnalysis = async (releaseId) => {
-  setAnalysisError("");
-  setRiskAnalysis(null);
+    setAnalysisError("");
+    setRiskAnalysis(null);
 
-  try {
-    const response = await apiClient.get(
-      `/releases/${releaseId}/risk_analysis`
-    );
+    try {
+      const response = await apiClient.get(
+        `/releases/${releaseId}/risk_analysis`,
+      );
 
-    setRiskAnalysis(response.data);
-  } catch (error) {
-    setAnalysisError(
-      error.response?.data?.error ||
-        "Unable to load risk analysis."
-    );
-  }
-};
+      setRiskAnalysis(response.data);
+    } catch (error) {
+      setAnalysisError(
+        error.response?.data?.error || "Unable to load risk analysis.",
+      );
+    }
+  };
 
-const generateRiskAnalysis = async (releaseId) => {
-  setAnalyzingReleaseId(releaseId);
-  setAnalysisError("");
-  setRiskAnalysis(null);
+  const generateRiskAnalysis = async (releaseId) => {
+    setAnalyzingReleaseId(releaseId);
+    setAnalysisError("");
+    setRiskAnalysis(null);
 
-  try {
-    const response = await apiClient.post(
-      `/releases/${releaseId}/risk_analysis`
-    );
+    try {
+      const response = await apiClient.post(
+        `/releases/${releaseId}/risk_analysis`,
+      );
 
-    setRiskAnalysis(response.data.risk_analysis ?? response.data);
+      setRiskAnalysis(response.data.risk_analysis ?? response.data);
 
-    // Refresh releases from Rails after analysis completes
-    const releasesResponse = await apiClient.get("/releases");
-    setReleases(releasesResponse.data);
-  } catch (error) {
-    setAnalysisError(
-      error.response?.data?.error ||
-        "Unable to generate risk analysis."
-    );
-  } finally {
-    setAnalyzingReleaseId(null);
-  }
-};
+      // Refresh releases from Rails after analysis completes
+      const releasesResponse = await apiClient.get("/releases");
+      setReleases(releasesResponse.data);
+    } catch (error) {
+      setAnalysisError(
+        error.response?.data?.error || "Unable to generate risk analysis.",
+      );
+    } finally {
+      setAnalyzingReleaseId(null);
+    }
+  };
 
   return (
     <div className="app">
@@ -279,7 +297,7 @@ const generateRiskAnalysis = async (releaseId) => {
           </section>
         )}
         {selectedRelease && (
-          <section className="releases-section">
+          <section className="releases-section" ref={changeSectionRef}>
             <h2>Release Changes</h2>
             <p>Add changes for Release {selectedRelease.version}.</p>
 
@@ -383,38 +401,72 @@ const generateRiskAnalysis = async (releaseId) => {
         )}
 
         {riskAnalysis && (
-          <section className="releases-section">
-            <h2>Risk Analysis Report</h2>
-            <p>
-              <strong>Risk Score:</strong> {riskAnalysis.risk_score}/100
-            </p>
-            <p>
-              <strong>Risk Level:</strong> {riskAnalysis.risk_level}
-            </p>
-            <p>
-              <strong>Summary:</strong> {riskAnalysis.summary}
-            </p>
+          <section className="risk-report" ref={riskReportRef}>
+            <div className="risk-report-header">
+              <div>
+                <h2>Risk Analysis Report</h2>
+                <p>AI-powered release risk assessment</p>
+              </div>
 
-            <h3>Identified Risks</h3>
-            <ul>
-              {riskAnalysis.risks?.map((risk, index) => (
-                <li key={index}>{risk}</li>
-              ))}
-            </ul>
+              <span
+                className={`risk-badge risk-${riskAnalysis.risk_level?.toLowerCase()}`}
+              >
+                {riskAnalysis.risk_level}
+              </span>
+            </div>
 
-            <h3>Recommendations</h3>
-            <ul>
-              {riskAnalysis.recommendations?.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+            <div className="risk-score-card">
+              <span>Risk Score</span>
+              <div className="risk-score">
+                {riskAnalysis.risk_score}
+                <span>/100</span>
+              </div>
+              <p>Overall release risk assessment</p>
+            </div>
 
-            <h3>Testing Recommendations</h3>
-            <ul>
-              {riskAnalysis.testing_recommendations?.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+            <div className="risk-report-section">
+              <h3>Summary</h3>
+              <p>{riskAnalysis.summary}</p>
+            </div>
+
+            <div className="risk-report-section">
+              <h3>Identified Risks</h3>
+              {riskAnalysis.risks?.length ? (
+                <ul>
+                  {riskAnalysis.risks.map((risk, index) => (
+                    <li key={index}>{risk}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No specific risks identified.</p>
+              )}
+            </div>
+
+            <div className="risk-report-section">
+              <h3>Recommendations</h3>
+              {riskAnalysis.recommendations?.length ? (
+                <ul>
+                  {riskAnalysis.recommendations.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No recommendations available.</p>
+              )}
+            </div>
+
+            <div className="risk-report-section">
+              <h3>Testing Recommendations</h3>
+              {riskAnalysis.testing_recommendations?.length ? (
+                <ul>
+                  {riskAnalysis.testing_recommendations.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No testing recommendations available.</p>
+              )}
+            </div>
           </section>
         )}
 
