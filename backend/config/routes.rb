@@ -8,6 +8,7 @@ Rails.application.routes.draw do
     namespace :v1 do
       resources :releases, only: [:create, :index, :show] do
       resources :changes, controller: "release_changes", only: [:create,:index]
+      resource :risk_analysis, only: [:show, :create], controller: "risk_analyses"
       end
     end
   end

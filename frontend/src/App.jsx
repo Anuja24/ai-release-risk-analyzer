@@ -13,8 +13,14 @@ function App() {
   const [selectedRelease, setSelectedRelease] = useState(null);
   const [changeSource, setChangeSource] = useState("manual");
   const [changeSuccess, setChangeSuccess] = useState("");
+  const [riskAnalysis, setRiskAnalysis] = useState(null);
+  const [analyzingReleaseId, setAnalyzingReleaseId] = useState(null);
+  const [analysisError, setAnalysisError] = useState("");
   const pendingReleases = releases.filter(
     (release) => release.status === "pending",
+  ).length;
+  const highRiskReleases = releases.filter(
+    (release) => release.risk_analysis?.risk_level === "high",
   ).length;
 
   const [formData, setFormData] = useState({
@@ -139,6 +145,49 @@ function App() {
       );
     }
   };
+
+  const fetchRiskAnalysis = async (releaseId) => {
+  setAnalysisError("");
+  setRiskAnalysis(null);
+
+  try {
+    const response = await apiClient.get(
+      `/releases/${releaseId}/risk_analysis`
+    );
+
+    setRiskAnalysis(response.data);
+  } catch (error) {
+    setAnalysisError(
+      error.response?.data?.error ||
+        "Unable to load risk analysis."
+    );
+  }
+};
+
+const generateRiskAnalysis = async (releaseId) => {
+  setAnalyzingReleaseId(releaseId);
+  setAnalysisError("");
+  setRiskAnalysis(null);
+
+  try {
+    const response = await apiClient.post(
+      `/releases/${releaseId}/risk_analysis`
+    );
+
+    setRiskAnalysis(response.data.risk_analysis ?? response.data);
+
+    // Refresh releases from Rails after analysis completes
+    const releasesResponse = await apiClient.get("/releases");
+    setReleases(releasesResponse.data);
+  } catch (error) {
+    setAnalysisError(
+      error.response?.data?.error ||
+        "Unable to generate risk analysis."
+    );
+  } finally {
+    setAnalyzingReleaseId(null);
+  }
+};
 
   return (
     <div className="app">
@@ -324,6 +373,51 @@ function App() {
             )}
           </section>
         )}
+
+        {analyzingReleaseId !== null && <p>Analyzing release...</p>}
+
+        {analysisError && (
+          <p className="form-error" role="alert">
+            {analysisError}
+          </p>
+        )}
+
+        {riskAnalysis && (
+          <section className="releases-section">
+            <h2>Risk Analysis Report</h2>
+            <p>
+              <strong>Risk Score:</strong> {riskAnalysis.risk_score}/100
+            </p>
+            <p>
+              <strong>Risk Level:</strong> {riskAnalysis.risk_level}
+            </p>
+            <p>
+              <strong>Summary:</strong> {riskAnalysis.summary}
+            </p>
+
+            <h3>Identified Risks</h3>
+            <ul>
+              {riskAnalysis.risks?.map((risk, index) => (
+                <li key={index}>{risk}</li>
+              ))}
+            </ul>
+
+            <h3>Recommendations</h3>
+            <ul>
+              {riskAnalysis.recommendations?.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+
+            <h3>Testing Recommendations</h3>
+            <ul>
+              {riskAnalysis.testing_recommendations?.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <section className="summary-cards">
           <div className="card">
             <p>Total Releases</p>
@@ -337,7 +431,7 @@ function App() {
 
           <div className="card">
             <p>High Risk Releases</p>
-            <h3>0</h3>
+            <h3>{highRiskReleases}</h3>
           </div>
         </section>
 
@@ -374,6 +468,25 @@ function App() {
                   }}
                 >
                   Manage Changes
+                </button>
+                <button
+                  type="button"
+                  className="secondary-button"
+                  disabled={analyzingReleaseId !== null}
+                  onClick={() => fetchRiskAnalysis(release.id)}
+                >
+                  View Risk Analysis
+                </button>
+
+                <button
+                  type="button"
+                  className="primary-button"
+                  disabled={analyzingReleaseId !== null}
+                  onClick={() => generateRiskAnalysis(release.id)}
+                >
+                  {analyzingReleaseId === release.id
+                    ? "Analyzing..."
+                    : "Generate Risk Analysis"}
                 </button>
               </div>
             ))}

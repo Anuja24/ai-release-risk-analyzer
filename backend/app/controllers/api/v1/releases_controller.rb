@@ -2,8 +2,13 @@ module Api
   module V1
     class ReleasesController < ApplicationController
       def index
-        releases = Release.order(created_at: :desc)
-        render json: releases
+        releases = Release.includes(:risk_analysis).order(created_at: :desc)
+        render json: releases.as_json(
+        include: {
+          risk_analysis: {
+            only: [:risk_level, :risk_score]
+          }
+        })
       end
 
       def show
